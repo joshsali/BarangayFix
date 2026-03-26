@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - role: string (required, enum: ['resident', 'admin'])
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: reports
+    // Document ID: {reportId}
+    // Fields:
+    //   - id: string (optional)
+    //   - title: string (required)
+    //   - description: string (required)
+    //   - category: string (required)
+    //   - status: string (required, enum: ['submitted', 'under review', 'in progress', 'resolved'])
+    //   - reporterUid: string (required)
+    //   - location: map (optional)
+    //   - photoUrl: string (optional)
+    //   - createdAt: timestamp (optional)
+    //   - updatedAt: timestamp (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (request.auth.token.email == "shrmpsllart@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['resident', 'admin'];
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll(['title', 'description', 'category', 'status', 'reporterUid']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.description is string && data.description.size() > 0 && data.description.size() < 2000 &&
+             data.category is string &&
+             data.status in ['submitted', 'under review', 'in progress', 'resolved'] &&
+             data.reporterUid is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /reports/{reportId} {
+      allow read, write: if true;
+      match /logs/{logId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

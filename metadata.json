@@ -1,0 +1,5 @@
+{
+  "name": "BarangayFix",
+  "description": "A community platform for residents to report infrastructure issues and for barangay officials to manage resolutions.",
+  "requestFramePermissions": ["geolocation"]
+}

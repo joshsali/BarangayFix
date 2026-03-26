@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["resident", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Infrastructure issue report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "urgency": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "status": { "type": "string", "enum": ["Submitted", "Under Review", "In Progress", "Resolved"] },
+        "reporterUid": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "category", "status", "reporterUid"]
+    },
+    "StatusLog": {
+      "title": "StatusLog",
+      "description": "A log of status changes for a report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reportId": { "type": "string" },
+        "fromStatus": { "type": "string" },
+        "toStatus": { "type": "string" },
+        "changedBy": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" }
+      },
+      "required": ["reportId", "toStatus", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Infrastructure reports"
+    },
+    "/reports/{reportId}/logs/{logId}": {
+      "schema": "StatusLog",
+      "description": "Status change history for a report"
+    }
+  }
+}
